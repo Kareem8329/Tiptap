@@ -33,7 +33,6 @@ public class Spawner : MonoBehaviour
         {
             Vector2 spawnPosition = GetSpawnPosition();
             Instantiate(circlePrefab, spawnPosition, Quaternion.identity);
-            circlePrefab.GetComponent<Shrink>().shrinkRate += difficulty * 0.01f;
         }
     }
 }

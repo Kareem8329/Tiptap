@@ -1,6 +1,8 @@
 using UnityEngine;
 using TMPro;
 using System.Collections.Generic;
+using Unity.VisualScripting;
+using UnityEngine.UIElements;
 
 public class UIManager : MonoBehaviour
 {
@@ -23,21 +25,43 @@ public class UIManager : MonoBehaviour
     public bool keyPressed = false;
     public bool roundcomplete = false;
 
+    public int wrongKeyPenalty = 10; // Adjust this value to increase/decrease penalty
+
+    public GameObject floatingTextPrefab;
+
+    public Vector3 lastCircleClickedPosition;
+
     void Start()
     {
         spawner = GetComponent<Spawner>();
-        newRound();
+        GetRandomKey();
     }
 
     void Update()
     {
         timer += Time.deltaTime;
 
-        if(Input.GetKeyDown(keyToPress.ToString()) && !keyPressed)
+        string input = Input.inputString;
+        if (input.Length > 0 && !keyPressed)
         {
-            newRound();
-        }
+            char typedChar = input[input.Length - 1];  // Get the last typed character
+            lastCircleClickedPosition = gameObject.GetComponent<Transform>().position;
+            if (typedChar == keyToPress)
+            {
+                newRound();
 
+                AddScore(10);
+                keyPressed = true;
+                keyText.color = new Color(keyText.color.r, keyText.color.g, keyText.color.b, 0.25f);
+                timer = 0f;
+            }
+            else
+            {
+                AddScore(-wrongKeyPenalty);
+            }
+        }
+        
+        // Check for mouse click and raycast to detect if a circle was clicked
         if (Input.GetMouseButtonDown(0))
         {
             Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -47,11 +71,13 @@ public class UIManager : MonoBehaviour
             {
                 if (hit.collider.CompareTag("Circle"))
                 {
-                    Debug.Log("Clicked a circle!");
-                    scoreMultiplier *= hit.collider.gameObject.GetComponent<Transform>().localScale.x;
-                    score += Mathf.RoundToInt(10 * scoreMultiplier);
-                    scoreText.text = score.ToString();
+                    lastCircleClickedPosition = hit.collider.gameObject.transform.position;
+                    AddScore(10);
                     Destroy(hit.collider.gameObject);
+                }
+                else
+                {
+                    AddScore(-wrongKeyPenalty);
                 }
             }
         }
@@ -61,11 +87,11 @@ public class UIManager : MonoBehaviour
         {
             Debug.Log("Round Complete!");
             roundcomplete = true;
-            newRound();
+            GetRandomKey();
             keyPressed = false;
-            scoreMultiplier = 1f;
         }
 
+        // increase difficulty every 5 rounds
         if(round >= 5)
         {
             round = 0;
@@ -73,33 +99,84 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    char GetRandomKey()
+    void GetRandomKey()
     {
         char randomKey;
-        if (timer < 30f)
-        {
-            randomKey = topKeyboard[Random.Range(0, topKeyboard.Count)];
-        }
-        else if (timer < 60f)
+        float randomValue = Random.value;
+
+        if (difficulty <= 2)
         {
             randomKey = middleKeyboard[Random.Range(0, middleKeyboard.Count)];
         }
+        else if (difficulty <= 4)
+        {
+            if (randomValue < 0.5f)
+            {
+                randomKey = topKeyboard[Random.Range(0, topKeyboard.Count)];
+            }
+            else
+            {
+                randomKey = middleKeyboard[Random.Range(0, middleKeyboard.Count)];
+            }
+        }
         else
         {
-            randomKey = bottomKeyboard[Random.Range(0, bottomKeyboard.Count)];
+            if (randomValue < 0.33f)
+            {
+                randomKey = topKeyboard[Random.Range(0, topKeyboard.Count)];
+            }
+            else if (randomValue < 0.66f)
+            {
+                randomKey = middleKeyboard[Random.Range(0, middleKeyboard.Count)];
+            }
+            else
+            {
+                randomKey = bottomKeyboard[Random.Range(0, bottomKeyboard.Count)];
+            }
         }
-        return randomKey;
+
+        keyToPress = randomKey;
+        keyText.text = keyToPress.ToString();
+        keyText.color = new Color(keyText.color.r, keyText.color.g, keyText.color.b, 1f);
+    }
+
+    public void AddScore(int amount)
+    {
+        scoreMultiplier = Mathf.Max(0.1f, 1.0f - (timer * 0.2f));
+
+        if (amount < 0 && keyPressed)
+        {
+            amount = Mathf.RoundToInt(amount * (1.1f - scoreMultiplier));
+        }
+
+        else
+        {
+            amount = Mathf.RoundToInt(amount * scoreMultiplier);
+        }
+        score += amount;
+        scoreText.text = score.ToString();
+        
+        if (floatingTextPrefab != null)
+        {
+            GameObject floatingText = Instantiate(floatingTextPrefab, lastCircleClickedPosition, Quaternion.identity);
+            TMP_Text textComponent = floatingText.GetComponent<TMP_Text>();
+            
+            if (textComponent != null)
+            {
+                textComponent.text = amount.ToString();
+                textComponent.color = amount > 0 ? new Color(0, 1, 0, 1) : new Color(1, 0, 0, 1);  // Green for +, red for -
+            }
+            
+            Destroy(floatingText, 2f);
+        }
     }
 
     void newRound()
     {
-        keyToPress = GetRandomKey();
-        keyText.text = keyToPress.ToString();
-
-        spawner.SpawnCircle(difficulty); // number of circles spawned is based on int difficulty
+        scoreMultiplier = 1f;
+        spawner.SpawnCircle(difficulty);
         round++;
-        keyPressed = true;
-
+        // set round text to round number
         roundcomplete = false;
     }
 }
