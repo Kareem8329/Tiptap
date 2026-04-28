@@ -52,7 +52,7 @@ public class UIManager : MonoBehaviour
 
                 AddScore(10);
                 keyPressed = true;
-                keyText.color = new Color(keyText.color.r, keyText.color.g, keyText.color.b, 0.25f);
+                keyText.color = new Color(keyText.color.r, keyText.color.g, keyText.color.b, 0.1f);
                 timer = 0f;
             }
             else
@@ -144,15 +144,11 @@ public class UIManager : MonoBehaviour
     {
         scoreMultiplier = Mathf.Max(0.1f, 1.0f - (timer * 0.2f));
 
-        if (amount < 0 && keyPressed)
-        {
-            amount = Mathf.RoundToInt(amount * (1.1f - scoreMultiplier));
-        }
-
-        else
+        if (amount > 0)
         {
             amount = Mathf.RoundToInt(amount * scoreMultiplier);
         }
+        
         score += amount;
         scoreText.text = score.ToString();
         
