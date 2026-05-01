@@ -297,7 +297,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'High score: '
+  m_text: 'High score: 0'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -586,7 +586,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &550230772
 RectTransform:
   m_ObjectHideFlags: 0
@@ -4262,9 +4262,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   lost: 0
-  timeSlider: {fileID: 0}
+  timeSlider: {fileID: 1192127592}
   gameStarted: 0
-  lostScreen: {fileID: 0}
+  lostScreen: {fileID: 1373310693}
   pauseScreen: {fileID: 0}
 --- !u!1 &2037263970
 GameObject:
