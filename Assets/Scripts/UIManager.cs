@@ -31,14 +31,38 @@ public class UIManager : MonoBehaviour
 
     public Vector3 lastCircleClickedPosition;
 
+    public GameManager gameManager;
+    public TextMeshProUGUI finalScoreText;
+        public AudioSource hitSound;
+
     void Start()
     {
         spawner = GetComponent<Spawner>();
+        gameManager = GetComponent<GameManager>();
         GetRandomKey();
+        hitSound = GetComponent<AudioSource>();
+
     }
 
     void Update()
     {
+        if (!gameManager.gameStarted)
+        {
+            keyText.text = "Press Space to Start";
+            return;
+        }
+
+        if (gameManager.lost)
+        {
+            finalScoreText.text = "Score: " + score.ToString();
+            // destroy all circles
+            GameObject[] circles = GameObject.FindGameObjectsWithTag("Circle");
+            foreach (GameObject circle in circles)            {
+                Destroy(circle);
+            }
+            return;
+        }
+
         timer += Time.deltaTime;
 
         string input = Input.inputString;
@@ -61,7 +85,6 @@ public class UIManager : MonoBehaviour
             }
         }
         
-        // Check for mouse click and raycast to detect if a circle was clicked
         if (Input.GetMouseButtonDown(0))
         {
             Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -74,6 +97,7 @@ public class UIManager : MonoBehaviour
                     lastCircleClickedPosition = hit.collider.gameObject.transform.position;
                     AddScore(10);
                     Destroy(hit.collider.gameObject);
+                    hitSound.Play();
                 }
                 else
                 {

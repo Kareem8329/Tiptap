@@ -6,15 +6,14 @@ public class GameManager : MonoBehaviour
 {
 
 
-    private float countdown = 60f; // Time in seconds to reach 0
+    private float countdown = 45f;
     private float sliderTimer;
     public bool lost;
     public Slider timeSlider;
     public bool gameStarted;
     public GameObject lostScreen;
-    public GameObject pauseScreen;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    
     void Start()
     {
         timeSlider.value = 1;
@@ -23,13 +22,11 @@ public class GameManager : MonoBehaviour
         lostScreen.SetActive(false);
     }
 
-    // Update is called once per frame
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.Space))
         {
             gameStarted = true;
-            pauseScreen.SetActive(false);
         }
         
         if (gameStarted && !lost)
